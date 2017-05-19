@@ -1,0 +1,57 @@
+service: shoutings-sentry
+
+provider:
+  name: aws
+  runtime: python3.6
+  region: ap-southeast-2
+
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "s3:List*"
+        - "s3:Read*"
+      Resource: "*"
+
+functions:
+  sentry:
+    handler: handler.sentry
+
+resources:
+  Resources: 
+    EventRule: 
+      Type: "AWS::Events::Rule"
+      Properties: 
+        Description: "EventRule"
+        EventPattern: 
+
+          source: 
+            - "aws.s3"
+          detail-type: 
+            - "AWS API Call via CloudTrail"
+          detail: 
+            eventSource: 
+              - "s3.amazonaws.com"
+            eventName: 
+              - "CreateBucket"
+              - "PutBucketAcl"
+
+        State: "ENABLED"
+        Targets: 
+          - 
+            Arn: 
+              Fn::GetAtt: 
+                - "SentryLambdaFunction"
+                - "Arn"
+            Id: "S3Shoutings"
+
+    PermissionForEventsToInvokeLambda: 
+      Type: "AWS::Lambda::Permission"
+      Properties: 
+        FunctionName: 
+          Ref: "SentryLambdaFunction"
+        Action: "lambda:InvokeFunction"
+        Principal: "events.amazonaws.com"
+        SourceArn: 
+          Fn::GetAtt: 
+            - "EventRule"
+            - "Arn"

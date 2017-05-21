@@ -9,6 +9,8 @@ def bad_things_payload(heading, details_string):
             {
                 "fallback": details_string,
                 "color": "#F00",
+                "author_name": "A angry bot",
+                "author_link": "https://github.com/davidporter-id-au/s3-misuse-shoutings",
                 "title": heading,
                 "fields": [
                     {

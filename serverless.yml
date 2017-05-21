@@ -4,12 +4,15 @@ provider:
   name: aws
   runtime: python3.6
   region: ap-southeast-2
+  environment:
+    WEBHOOK_URL: ${env:WEBHOOK_URL}
+  memorySize: 128
 
   iamRoleStatements:
     - Effect: "Allow"
       Action:
         - "s3:List*"
-        - "s3:Read*"
+        - "s3:Read*" # probably too open
       Resource: "*"
 
 functions:

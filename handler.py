@@ -1,28 +1,18 @@
 import sys
+import os
 sys.path.insert(0, './lib')
 import pydash
+import notify_slack
+import receive_events
 
-get = pydash.objects.get
-
-def check_bucket_creation_for_problems(ev):
-    problems = []
-    bucket_grants = get(ev, "detail.requestParameters.AccessControlPolicy.AccessControlList.Grant")
-
-    for grant in bucket_grants:
-        if get(grant, "Grantee.URI") == "http://acs.amazonaws.com/groups/global/AllUsers":
-            problems.append({
-                "bucket_name": get(ev, "detail.requestParameters.bucketName"),
-                "person_responsible": get(ev, "detail.userIdentity.principalId"),
-                "region": get(ev, "detail.awsRegion"),
-                "account": get(ev, "account"),
-                "bucket_grants": get(ev, "detail.requestParameters.AccessControlPolicy.AccessControlList.Grant"),
-                "error": "All users flagged in bucket policy",
-                "debug": grant
-            })
-
-    return problems
+# FIXME: make this a database lookup rather than being hardcoded
+whitelist = set([])
 
 def sentry(event, context):
-    problems = check_bucket_creation_for_problems(event)
-    if problems:
-        print(problems)
+    problems = receive_events.check_bucket_creation(event, whitelist)
+    for problem in problems:
+        notify_slack.bad_things(
+            problem["error_title"],
+            problem["error_body"],
+            os.getenv("WEBHOOK_URL")
+        )

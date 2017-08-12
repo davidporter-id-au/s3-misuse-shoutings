@@ -9,6 +9,8 @@ This is a spike to use [AWS cloudwatch event rules](http://docs.aws.amazon.com/A
 
 #### what does it do? 
 
+It's triggered by cloudtrail events, firing when "CreateBucket" or "PutBucketAcl" events are detected.
+
 It scans bucket creation and ACL modification events for bad behaviour. If detected, it presently notifies slack, but it could just as easily trigger pagerduty or something similar. 
 
 #### What does it check for? 
